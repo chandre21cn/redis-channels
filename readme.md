@@ -4,12 +4,99 @@ Redis Channels
 
 [![Build Status](https://secure.travis-ci.org/sorensen/redis-channels.png)](http://travis-ci.org/sorensen/redis-channels)
 
+Turn redis into a multi-process event emitter! Handles the routing of redis 
+pubsub messages for you, EventEmitter style, taking care of the tedious work 
+of routing the channel on a `redis.on('message')` callback.
+
 
 Usage
 -----
 
 ```js
 var Channels = require('redis-channels')
+```
+
+
+Methods
+-------
+
+### Channels(client, options)
+
+Constructor method, create a new Channels object to wrap the pubsub 
+handlers of the given redis client. If `toJSON` is passed into the options, all 
+messages received will be passed through `JSON.stringify`.
+
+* `client` - redis client (will be put into pubsub mode)
+* `options` - configuration hash (optional)
+
+```js
+var Channels = require('redis-channels')
+  , redis = require('redis')
+  , pubsub = redis.createClient()
+  , channels = new Channels(pubsub)
+```
+
+
+### instance.subscribe(channel, [channel2], [...], callback)
+
+Subscribe to any number of channels, if a callback is supplied it will be 
+executed anytime a message is received for any of the channels.
+
+* `param` - parameter
+
+```js
+```
+
+
+### instance.psubscribe(pattern, [pattern2], [...], callback)
+
+Pattern subscribe to any number of patterns, broadcasts to any subscribed 
+channels that match the glob-style patterns using [minimatch](https://github.com/isaacs/minimatch).
+
+* `param` - parameter
+
+```js
+```
+
+
+### instance.unsubscribe(channel, [channel2], [...], [listener])
+
+Unsubscribe from any number of channels, if a `listener` is provided, only that 
+listener will be removed from the subscriptions, similar to node EventEmitter, if 
+there are no other listeners left, or one is not provided, all subscription events 
+will be removed and an `unsubscribe` will be issued to the redis client.
+
+* `param` - parameter
+
+```js
+```
+
+
+### instance.punsubscribe(pattern, [pattern2], [...], [listener])
+
+Pattern unsubscribe, see `psubscribe` and `unsubscribe` for details.
+
+* `param` - parameter
+
+```js
+```
+
+
+### instance.on(channel, callback)
+
+Proxy to EventEmitter.on, can be used to attach multiple callback handlers 
+for any given `channel` received from a redis publish event.
+
+* `channel` - event listener / redis channel
+* `callback` - function callback handler
+
+```js
+channels.subscribe('foo', 'bar')
+channels.on('foo', 'bar', function(channel, data) {
+  // message receive from either foo or bar!
+})
+channels.publish('foo', 30)
+channels.publish('bar', 'meow')
 ```
 
 
